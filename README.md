@@ -1,0 +1,106 @@
+# @wawjs/ngx-socket
+
+Angular Socket.IO integration package from Web Art Work.
+
+`ngx-socket` extracts the socket client feature from the older all-in-one package into a focused Angular package.
+
+## License
+
+[MIT](LICENSE)
+
+## Installation
+
+```bash
+npm i --save @wawjs/ngx-socket
+```
+
+You also need a Socket.IO client factory:
+
+```bash
+npm i --save socket.io-client
+```
+
+## Usage
+
+```ts
+import { provideNgxSocket } from '@wawjs/ngx-socket';
+import { io } from 'socket.io-client';
+
+export const appConfig = {
+	providers: [
+		provideNgxSocket({
+			socket: {
+				url: 'https://api.example.com',
+			},
+			io,
+		}),
+	],
+};
+```
+
+## Available Features
+
+| Name                     | Description                                                        |
+| ------------------------ | ------------------------------------------------------------------ |
+| `SocketService`          | Socket.IO wrapper for connection setup, event listeners, and emits |
+| `provideNgxSocket`       | Environment provider for socket configuration                      |
+| `SocketConfig`, `Config` | Public configuration types                                         |
+
+## Socket Service
+
+`SocketService` manages client connection setup and event communication.
+
+Subscriptions registered before the socket connects are attached on connection. Emits made while it is reconnecting are queued and sent once; the service does not create timer-based retry loops.
+
+### Methods
+
+- `setUrl(url: string): void`
+- `disconnect(): void`
+- `on(to: string, cb?): void`
+- `emit(to: string, message: any, room?: any): void`
+
+Example:
+
+```ts
+import { SocketService } from '@wawjs/ngx-socket';
+
+constructor(private socketService: SocketService) {}
+
+ngOnInit() {
+	this.socketService.on('connect', () => {
+		console.log('Connected');
+	});
+
+	this.socketService.on('message', message => {
+		console.log(message);
+	});
+}
+
+sendMessage() {
+	this.socketService.emit('message', { text: 'Hello world' });
+}
+```
+
+## Configuration
+
+`provideNgxSocket()` accepts:
+
+- `socket: false` to disable the client
+- `socket: true` to connect using the current origin
+- `socket: { url?, port?, opts? }` for explicit endpoint/options
+- `io` as the raw Socket.IO client factory or module export
+
+## AI Coding Agents
+
+This package includes [AI.md](AI.md) with copyable instructions for Codex, Claude Code, Cursor, and other coding agents.
+
+Copy this into the consuming project's `AGENTS.md`, `CLAUDE.md`, or equivalent file:
+
+```md
+- This Angular project uses `@wawjs/ngx-socket` for Socket.IO client communication.
+- Import public APIs from `@wawjs/ngx-socket`.
+- Prefer bootstrapping with `provideNgxSocket({...})` in application providers.
+- Put socket URL, port, client options, and the `io` factory in `provideNgxSocket()` instead of scattering connection setup across components.
+- Prefer `SocketService` for event subscriptions and emits before introducing another socket abstraction.
+- Keep SSR-safe behavior intact. Do not access browser-only socket APIs outside the guarded service flow.
+```
